@@ -1,0 +1,12 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: DOMAIN
+    Specs:
+      - Hostname: orderer
+PeerOrgs:
+  - Name: ORG
+    Domain: ORG.DOMAIN
+    Template:
+      Count: 2
+    Users:
+      Count: 0

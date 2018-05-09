@@ -1,0 +1,8 @@
+Organizations:
+  - &ORG
+      Name: ORGMSP
+      ID: ORGMSP
+      MSPDir: crypto-config/peerOrganizations/ORG.DOMAIN/msp
+      AnchorPeers:
+        - Host: peer0.ORG.DOMAIN
+          Port: 9051

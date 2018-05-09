@@ -1,0 +1,42 @@
+Profiles:
+    OrdererGenesis:
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+        Consortiums:
+            ComposerConsortium:
+                Organizations:
+                    - *ORG
+    CHANNEL_NAME:
+        Consortium: ComposerConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *ORG
+Organizations:
+    - &OrdererOrg
+        Name: OrdererOrg
+        ID: OrdererMSP
+        MSPDir: crypto-config/ordererOrganizations/DOMAIN/msp
+        AdminPrincipal: Role.MEMBER
+    - &ORG
+        Name: ORG
+        ID: ORGMSP
+        MSPDir: crypto-config/peerOrganizations/ORG.DOMAIN/msp
+        AdminPrincipal: Role.MEMBER
+        AnchorPeers:
+            - Host: peer0.ORG.DOMAIN
+              Port: 7051
+Orderer: &OrdererDefaults
+    OrdererType: solo
+    Addresses:
+        - orderer.DOMAIN:7050
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 98 MB
+        PreferredMaxBytes: 512 KB
+    Organizations:
+Application: &ApplicationDefaults
+    Organizations:

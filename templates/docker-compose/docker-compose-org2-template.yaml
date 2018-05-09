@@ -1,0 +1,140 @@
+version: '2'
+
+services:
+  ca.ORG.DOMAIN:
+    container_name: ca.ORG.DOMAIN
+    image: hyperledger/fabric-ca:$ARCH-1.1.0
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca.ORG.DOMAIN
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/ca-config/ca.ORG.DOMAIN-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/ca-config/CA_SECRET_KEY
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/ca-config/ca.ORG.DOMAIN-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/ca-config/CA_SECRET_KEY
+    working_dir: /etc/hyperledger/ca-config
+    ports:
+      - 8054:7054
+    command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
+    volumes:
+      - ./crypto-config/peerOrganizations/ORG.DOMAIN/ca/:/etc/hyperledger/ca-config
+
+  peer0.ORG.DOMAIN:
+    container_name: peer0.ORG.DOMAIN
+    image: hyperledger/fabric-peer:$ARCH-1.1.0
+    environment:
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer0.ORG.DOMAIN
+      - CORE_PEER_ADDRESS=peer0.ORG.DOMAIN:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=composer_default
+      - CORE_PEER_LOCALMSPID=ORGMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/msp
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+    working_dir: /etc/hyperledger/crypto
+    command: peer node start
+    ports:
+      - 9051:7051
+      - 9053:7053
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./crypto-config/peerOrganizations/ORG.DOMAIN/peers/peer0.ORG.DOMAIN:/etc/hyperledger/crypto/peer
+        - ./crypto-config/ordererOrganizations/DOMAIN/orderers/orderer.DOMAIN/:/etc/hyperledger/crypto/orderer
+        - ./crypto-config/peerOrganizations/ORG.DOMAIN/users/Admin@ORG.DOMAIN/msp:/etc/hyperledger/crypto/msp
+        - ./artifacts/:/etc/hyperledger/artifacts
+    depends_on:
+      - ca.ORG.DOMAIN
+      - couchdb
+    PEER_EXTRA_HOSTS
+
+  couchdb:
+    container_name: couchdb
+    image: hyperledger/fabric-couchdb:$ARCH-0.4.6
+    ports:
+      - 7984:5984
+    environment:
+      DB_URL: http://localhost:7984/member_db
+
+  peer1.ORG.DOMAIN:
+    container_name: peer1.ORG.DOMAIN
+    image: hyperledger/fabric-peer:$ARCH-1.1.0
+    environment:
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_ID=peer1.ORG.DOMAIN
+      - CORE_PEER_ADDRESS=peer1.ORG.DOMAIN:7051
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=composer_default
+      - CORE_PEER_LOCALMSPID=ORGMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/msp
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/crypto/peer/tls/ca.crt
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+    working_dir: /etc/hyperledger/crypto
+    command: peer node start
+    ports:
+      - 10051:7051
+      - 10053:7053
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./crypto-config/peerOrganizations/ORG.DOMAIN/peers/peer1.ORG.DOMAIN:/etc/hyperledger/crypto/peer
+        - ./crypto-config/ordererOrganizations/DOMAIN/orderers/orderer.DOMAIN/:/etc/hyperledger/crypto/orderer
+        - ./crypto-config/peerOrganizations/ORG.DOMAIN/users/Admin@ORG.DOMAIN/msp:/etc/hyperledger/crypto/msp
+        - ./artifacts/:/etc/hyperledger/artifacts
+    depends_on:
+      - ca.ORG.DOMAIN
+      - couchdb1
+    PEER_EXTRA_HOSTS
+
+  couchdb1:
+    container_name: couchdb1
+    image: hyperledger/fabric-couchdb:$ARCH-0.4.6
+    ports:
+      - 8984:5984
+    environment:
+      DB_URL: http://localhost:8984/member_db
+
+  cli.ORG.DOMAIN:
+    container_name: cli.ORG.DOMAIN
+    image: hyperledger/fabric-tools:$ARCH-1.1.0
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_LOGGING_LEVEL=DEBUG
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.ORG.DOMAIN:7051
+      - CORE_PEER_LOCALMSPID=ORGMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/ORG/peers/peer0.ORG.DOMAIN/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/ORG/peers/peer0.ORG.DOMAIN/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/ORG/peers/peer0.ORG.DOMAIN/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/ORG/users/Admin@ORG.DOMAIN/msp
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+    working_dir: /etc/hyperledger/ORG
+    command: /bin/bash
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./crypto-config/peerOrganizations/ORG.DOMAIN:/etc/hyperledger/ORG
+    depends_on:
+      - peer0.ORG.DOMAIN
+      - peer1.ORG.DOMAIN
+    CLI_EXTRA_HOSTS
