@@ -64,7 +64,7 @@ function generateDockerComposeMain() {
 
     cli_extra_hosts=${DEFAULT_CLI_EXTRA_HOSTS}
     peer_extra_hosts=${DEFAULT_PEER_EXTRA_HOSTS}
-    ca_secret_key=$(findCASecretKey ${ORG1})
+    ca_secret_key=$(findCASecretKey ${GENERATED_CRYPTO_CONFIG_FOLDER} ${ORG1})
 
     if [[ -z "${ca_secret_key}" ]]; then
        print_error "Secret key was not found for ${ORG1}'s CA, please fix and retry"
@@ -119,7 +119,7 @@ function generateDockerComposeOrg2() {
 
     cli_extra_hosts=${DEFAULT_CLI_EXTRA_HOSTS}
     peer_extra_hosts=${DEFAULT_PEER_EXTRA_HOSTS}
-    ca_secret_key=$(findCASecretKey ${ORG2})
+    ca_secret_key=$(findCASecretKey ${GENERATED_ORG2_CRYPTO_CONFIG_FOLDER} ${ORG2})
 
     if [[ -z "${ca_secret_key}" ]]; then
        print_error "Secret key was not found for ${ORG2}'s CA, please fix and retry"
@@ -158,7 +158,7 @@ function startOrg2() {
 }
 
 function findCASecretKey() {
-    echo `find ${GENERATED_CRYPTO_CONFIG_FOLDER}/peerOrganizations/${1}.${DOMAIN}/ca -type f -name "*_sk" 2>/dev/null | sed "s/.*\///"`
+    echo `find ${1}/peerOrganizations/${2}.${DOMAIN}/ca -type f -name "*_sk" 2>/dev/null | sed "s/.*\///"`
 }
 
 function createChannel() {
@@ -188,6 +188,17 @@ function getRemoteAddresses() {
     DEFAULT_CLI_EXTRA_HOSTS="extra_hosts:[newline]      - orderer.${DOMAIN}:${IP_ORDERER}"
 }
 
+function downloadArtifacts() {
+    if [ "${REMOTE}" == "true" ]; then
+        echo "Download from other machines"
+    else
+        echo "Copying artifacts from compose directory"
+        cp -r ${GENERATED_ARTIFACTS_FOLDER}/* ${GENERATED_ORG2_ARTIFACTS_FOLDER}/
+        cp -r ${GENERATED_CRYPTO_CONFIG_FOLDER}/peerOrganizations/${ORG1}.${DOMAIN} ${GENERATED_ORG2_CRYPTO_CONFIG_FOLDER}/peerOrganizations
+        cp -r ${GENERATED_CRYPTO_CONFIG_FOLDER}/ordererOrganizations ${GENERATED_ORG2_CRYPTO_CONFIG_FOLDER}
+    fi
+}
+
 # Parsing commandline args
 while getopts "h?m:r" opt; do
     case "${opt}" in
@@ -197,10 +208,14 @@ while getopts "h?m:r" opt; do
         ;;
         m)  MODE=$OPTARG
         ;;
-        r)  getRemoteAddresses
+        r)  REMOTE="true"
         ;;
     esac
 done
+
+if [ "${REMOTE}" == "true" ]; then
+    getRemoteAddresses
+fi
 
 if [ "${MODE}" == "generate-main" ]; then
     echo "Generating artifacts for main org"
@@ -208,12 +223,15 @@ if [ "${MODE}" == "generate-main" ]; then
     generateConfigtxMain
     generateCryptoConfigMain
     generateMainOrgArtifacts
+    generateDockerComposeMain # Temp
 elif [ "${MODE}" == "generate-org2" ]; then
     echo "Generating artifacts for org2"
     removeArtifacts ${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER}
     generateConfigtxOrg2
     generateCryptoConfigOrg2
     generateOrg2Artifacts
+    downloadArtifacts
+    generateDockerComposeOrg2 # Temp
 elif [ "${MODE}" == "up-main" ]; then
     echo "Starting main org"
     generateDockerComposeMain
