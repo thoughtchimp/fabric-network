@@ -171,6 +171,8 @@ services:
     volumes:
       - /var/run/:/host/var/run/
       - ./crypto-config/peerOrganizations/ORG.DOMAIN:/etc/hyperledger/ORG
+      - ./crypto-config/:/etc/hyperledger/crypto
+      - ./artifacts/:/etc/hyperledger/artifacts
     depends_on:
       - peer0.ORG.DOMAIN
       - peer1.ORG.DOMAIN
