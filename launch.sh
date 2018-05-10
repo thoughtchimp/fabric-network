@@ -189,7 +189,7 @@ function fetchAndJoinChannel() {
     org=$1
     peer=$2
 
-    docker exec ${peer}.${org}.${DOMAIN} peer channel fetch 0 -o orderer.${DOMAIN}:7050 -c ${CHANNEL_NAME} --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt
+    docker exec ${peer}.${org}.${DOMAIN} peer channel fetch 0 ${CHANNEL_NAME}.block -o orderer.${DOMAIN}:7050 -c ${CHANNEL_NAME} --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt
     docker exec ${peer}.${org}.${DOMAIN} peer channel join -b ${CHANNEL_NAME}.block
 }
 
