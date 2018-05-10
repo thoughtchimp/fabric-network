@@ -166,7 +166,7 @@ function generateScriptsOrg2() {
 }
 
 function registerOrg2() {
-    docker exec cli.${ORG1}.${DOMAIN} ${GENERATED_ORG2_ARTIFACTS_FOLDER}/cli-1.sh
+    docker exec -i cli.${ORG1}.${DOMAIN} bash < ${GENERATED_ORG2_ARTIFACTS_FOLDER}/cli-1.sh
 }
 
 function startOrg2() {
