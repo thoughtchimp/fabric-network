@@ -265,7 +265,6 @@ elif [ "${MODE}" == "up-org2" ]; then
     startOrg2
     fetchAndJoinChannel ${ORG2} "peer0"
     fetchAndJoinChannel ${ORG2} "peer1"
-    echo "Pending"
 elif [ "${MODE}" == "down-main" ]; then
     echo "Pending"
 elif [ "${MODE}" == "down-org2" ]; then
