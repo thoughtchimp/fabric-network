@@ -54,7 +54,7 @@ services:
       - CORE_PEER_LOCALMSPID=ORGMSP
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/msp
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer0.ORG.DOMAIN:5984
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
@@ -75,11 +75,11 @@ services:
         - ./artifacts/:/etc/hyperledger/artifacts
     depends_on:
       - ca.ORG.DOMAIN
-      - couchdb
+      - couchdb.peer0.ORG.DOMAIN
     PEER_EXTRA_HOSTS
 
-  couchdb:
-    container_name: couchdb
+  couchdb.peer0.ORG.DOMAIN:
+    container_name: couchdb.peer0.ORG.DOMAIN
     image: hyperledger/fabric-couchdb:$ARCH-0.4.6
     ports:
       - 5984:5984
@@ -99,7 +99,7 @@ services:
       - CORE_PEER_LOCALMSPID=ORGMSP
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/msp
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.peer1.ORG.DOMAIN:5984
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/crypto/peer/tls/server.key
       - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/crypto/peer/tls/server.crt
@@ -120,11 +120,11 @@ services:
         - ./artifacts/:/etc/hyperledger/artifacts
     depends_on:
       - ca.ORG.DOMAIN
-      - couchdb1
+      - couchdb.peer1.ORG.DOMAIN
     PEER_EXTRA_HOSTS
 
-  couchdb1:
-    container_name: couchdb1
+  couchdb.peer1.ORG.DOMAIN:
+    container_name: couchdb.peer1.ORG.DOMAIN
     image: hyperledger/fabric-couchdb:$ARCH-0.4.6
     ports:
       - 6984:5984

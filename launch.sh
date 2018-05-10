@@ -223,7 +223,6 @@ if [ "${MODE}" == "generate-main" ]; then
     generateConfigtxMain
     generateCryptoConfigMain
     generateMainOrgArtifacts
-    generateDockerComposeMain # Temp
 elif [ "${MODE}" == "generate-org2" ]; then
     echo "Generating artifacts for org2"
     removeArtifacts ${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER}
@@ -231,7 +230,6 @@ elif [ "${MODE}" == "generate-org2" ]; then
     generateCryptoConfigOrg2
     generateOrg2Artifacts
     downloadArtifacts
-    generateDockerComposeOrg2 # Temp
 elif [ "${MODE}" == "up-main" ]; then
     echo "Starting main org"
     generateDockerComposeMain
