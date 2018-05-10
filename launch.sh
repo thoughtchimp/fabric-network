@@ -250,6 +250,7 @@ elif [ "${MODE}" == "generate-org2" ]; then
     generateCryptoConfigOrg2
     generateOrg2Artifacts
     downloadArtifacts
+    generateScriptsOrg2
 elif [ "${MODE}" == "up-main" ]; then
     echo "Starting main org"
     generateDockerComposeMain
