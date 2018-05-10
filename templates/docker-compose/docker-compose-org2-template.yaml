@@ -1,5 +1,8 @@
 version: '2'
 
+networks:
+  defaultnetwork:
+
 services:
   ca.ORG.DOMAIN:
     container_name: ca.ORG.DOMAIN
@@ -18,6 +21,8 @@ services:
     command: sh -c 'fabric-ca-server start -b admin:adminpw -d'
     volumes:
       - ./crypto-config/peerOrganizations/ORG.DOMAIN/ca/:/etc/hyperledger/ca-config
+    networks:
+      - defaultnetwork
 
   peer0.ORG.DOMAIN:
     container_name: peer0.ORG.DOMAIN
@@ -46,14 +51,16 @@ services:
       - 9051:7051
       - 9053:7053
     volumes:
-        - /var/run/:/host/var/run/
-        - ./crypto-config/peerOrganizations/ORG.DOMAIN/peers/peer0.ORG.DOMAIN:/etc/hyperledger/crypto/peer
-        - ./crypto-config/ordererOrganizations/DOMAIN/orderers/orderer.DOMAIN/:/etc/hyperledger/crypto/orderer
-        - ./crypto-config/peerOrganizations/ORG.DOMAIN/users/Admin@ORG.DOMAIN/msp:/etc/hyperledger/crypto/msp
-        - ./artifacts/:/etc/hyperledger/artifacts
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/ORG.DOMAIN/peers/peer0.ORG.DOMAIN:/etc/hyperledger/crypto/peer
+      - ./crypto-config/ordererOrganizations/DOMAIN/orderers/orderer.DOMAIN/:/etc/hyperledger/crypto/orderer
+      - ./crypto-config/peerOrganizations/ORG.DOMAIN/users/Admin@ORG.DOMAIN/msp:/etc/hyperledger/crypto/msp
+      - ./artifacts/:/etc/hyperledger/artifacts
     depends_on:
       - ca.ORG.DOMAIN
       - couchdb.peer0.ORG.DOMAIN
+    networks:
+      - defaultnetwork
     PEER_EXTRA_HOSTS
 
   couchdb.peer0.ORG.DOMAIN:
@@ -63,6 +70,8 @@ services:
       - 7984:5984
     environment:
       DB_URL: http://localhost:7984/member_db
+    networks:
+      - defaultnetwork
 
   peer1.ORG.DOMAIN:
     container_name: peer1.ORG.DOMAIN
@@ -91,14 +100,16 @@ services:
       - 10051:7051
       - 10053:7053
     volumes:
-        - /var/run/:/host/var/run/
-        - ./crypto-config/peerOrganizations/ORG.DOMAIN/peers/peer1.ORG.DOMAIN:/etc/hyperledger/crypto/peer
-        - ./crypto-config/ordererOrganizations/DOMAIN/orderers/orderer.DOMAIN/:/etc/hyperledger/crypto/orderer
-        - ./crypto-config/peerOrganizations/ORG.DOMAIN/users/Admin@ORG.DOMAIN/msp:/etc/hyperledger/crypto/msp
-        - ./artifacts/:/etc/hyperledger/artifacts
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/ORG.DOMAIN/peers/peer1.ORG.DOMAIN:/etc/hyperledger/crypto/peer
+      - ./crypto-config/ordererOrganizations/DOMAIN/orderers/orderer.DOMAIN/:/etc/hyperledger/crypto/orderer
+      - ./crypto-config/peerOrganizations/ORG.DOMAIN/users/Admin@ORG.DOMAIN/msp:/etc/hyperledger/crypto/msp
+      - ./artifacts/:/etc/hyperledger/artifacts
     depends_on:
       - ca.ORG.DOMAIN
       - couchdb.peer1.ORG.DOMAIN
+    networks:
+      - defaultnetwork
     PEER_EXTRA_HOSTS
 
   couchdb.peer1.ORG.DOMAIN:
@@ -108,6 +119,8 @@ services:
       - 8984:5984
     environment:
       DB_URL: http://localhost:8984/member_db
+    networks:
+      - defaultnetwork
 
   cli.ORG.DOMAIN:
     container_name: cli.ORG.DOMAIN
@@ -132,9 +145,11 @@ services:
     working_dir: /etc/hyperledger/ORG
     command: /bin/bash
     volumes:
-        - /var/run/:/host/var/run/
-        - ./crypto-config/peerOrganizations/ORG.DOMAIN:/etc/hyperledger/ORG
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/ORG.DOMAIN:/etc/hyperledger/ORG
     depends_on:
       - peer0.ORG.DOMAIN
       - peer1.ORG.DOMAIN
+    networks:
+      - defaultnetwork
     CLI_EXTRA_HOSTS
