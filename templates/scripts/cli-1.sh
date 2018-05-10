@@ -22,7 +22,7 @@ configtxlator compute_update --channel_id ${CHANNEL_NAME} --original config.pb -
 
 configtxlator proto_decode --input _ORG__update.pb --type common.ConfigUpdate | jq . > _ORG__update.json
 
-echo '{"payload":{"header":{"channel_header":{"channel_id":"${CHANNEL_NAME}", "type":2}},"data":{"config_update":'$(cat _ORG__update.json)'}}}' | jq . > _ORG__update_in_envelope.json
+echo '{"payload":{"header":{"channel_header":{"channel_id":"_CHANNEL_NAME_", "type":2}},"data":{"config_update":'$(cat _ORG__update.json)'}}}' | jq . > _ORG__update_in_envelope.json
 
 configtxlator proto_encode --input _ORG__update_in_envelope.json --type common.Envelope --output _ORG__update_in_envelope.pb
 
