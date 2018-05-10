@@ -1,7 +1,8 @@
 version: '2'
 
 networks:
-  defaultnetwork:
+  composer_defaultnetwork:
+     external: true
 
 services:
   ca.ORG.DOMAIN:
@@ -22,7 +23,7 @@ services:
     volumes:
       - ./crypto-config/peerOrganizations/ORG.DOMAIN/ca/:/etc/hyperledger/ca-config
     networks:
-      - defaultnetwork
+      - composer_defaultnetwork
 
   peer0.ORG.DOMAIN:
     container_name: peer0.ORG.DOMAIN
@@ -60,7 +61,7 @@ services:
       - ca.ORG.DOMAIN
       - couchdb.peer0.ORG.DOMAIN
     networks:
-      - defaultnetwork
+      - composer_defaultnetwork
     PEER_EXTRA_HOSTS
 
   couchdb.peer0.ORG.DOMAIN:
@@ -71,7 +72,7 @@ services:
     environment:
       DB_URL: http://localhost:7984/member_db
     networks:
-      - defaultnetwork
+      - composer_defaultnetwork
 
   peer1.ORG.DOMAIN:
     container_name: peer1.ORG.DOMAIN
@@ -109,7 +110,7 @@ services:
       - ca.ORG.DOMAIN
       - couchdb.peer1.ORG.DOMAIN
     networks:
-      - defaultnetwork
+      - composer_defaultnetwork
     PEER_EXTRA_HOSTS
 
   couchdb.peer1.ORG.DOMAIN:
@@ -120,7 +121,7 @@ services:
     environment:
       DB_URL: http://localhost:8984/member_db
     networks:
-      - defaultnetwork
+      - composer_defaultnetwork
 
   cli.ORG.DOMAIN:
     container_name: cli.ORG.DOMAIN
@@ -151,5 +152,5 @@ services:
       - peer0.ORG.DOMAIN
       - peer1.ORG.DOMAIN
     networks:
-      - defaultnetwork
+      - composer_defaultnetwork
     CLI_EXTRA_HOSTS
