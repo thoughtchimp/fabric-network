@@ -8,12 +8,15 @@ source ./common.sh
 
 composeTemplatesFolder="templates/docker-compose"
 artifactsTemplatesFolder="templates/crypto"
+scriptsTemplateFolder="templates/scripts"
 
 ARCH=`uname -m`
 
 : ${HOME_PATH:=${PWD}}
 : ${TEMPLATES_CRYPTO_FOLDER:=${HOME_PATH}/${artifactsTemplatesFolder}}
 : ${TEMPLATES_DOCKER_COMPOSE_FOLDER:=${HOME_PATH}/${composeTemplatesFolder}}
+: ${TEMPLATES_SCRIPTS_FOLDER:=${HOME_PATH}/${scriptsTemplateFolder}}
+
 : ${GENERATED_DOCKER_COMPOSE_FOLDER:=./composer}
 : ${GENERATED_ARTIFACTS_FOLDER:=${GENERATED_DOCKER_COMPOSE_FOLDER}/artifacts}
 : ${GENERATED_CRYPTO_CONFIG_FOLDER:=${GENERATED_DOCKER_COMPOSE_FOLDER}/crypto-config}
@@ -107,7 +110,11 @@ function generateOrg2Artifacts() {
 
     export FABRIC_CFG_PATH=${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER}
 
-    configtxgen -printOrg ${ORG2}MSP > ./${GENERATED_ORG2_ARTIFACTS_FOLDER}/org3.json
+    configtxgen -printOrg ${ORG2}MSP > ${GENERATED_ORG2_ARTIFACTS_FOLDER}/${ORG2}.json
+
+    if [ "${REMOTE}" != "true" ]; then
+        cp ${GENERATED_ORG2_ARTIFACTS_FOLDER}/${ORG2}.json ${GENERATED_ARTIFACTS_FOLDER}/${ORG2}.json
+    fi
 }
 
 function generateDockerComposeOrg2() {
@@ -147,6 +154,19 @@ function generateCryptoConfigOrg2() {
     f="${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER}/crypto-config.yaml"
 
     sed -e "s/DOMAIN/${DOMAIN}/g" -e "s/ORG/${ORG2}/g" ${compose_template} > ${f}
+}
+
+function generateScriptsOrg2() {
+    for script in cli-1 cli-2
+    do
+        template=${TEMPLATES_SCRIPTS_FOLDER}/${script}.sh
+        f=${GENERATED_ORG2_ARTIFACTS_FOLDER}/${script}.sh
+        sed -e "s/_DOMAIN_/${DOMAIN}/g" -e "s/_ORG_/${ORG2}/g" -e "s/_CHANNEL_NAME_/${CHANNEL_NAME}/g" ${template} > ${f}
+    done
+}
+
+function registerOrg2() {
+    docker exec cli.${ORG1}.${DOMAIN} ${GENERATED_ORG2_ARTIFACTS_FOLDER}/cli-1.sh
 }
 
 function startOrg2() {
@@ -239,6 +259,7 @@ elif [ "${MODE}" == "up-main" ]; then
     fetchAndJoinChannel ${ORG1} "peer1"
 elif [ "${MODE}" == "up-org2" ]; then
     echo "Starting main org"
+    registerOrg2
     generateDockerComposeOrg2
     startOrg2
     fetchAndJoinChannel ${ORG2} "peer0"
