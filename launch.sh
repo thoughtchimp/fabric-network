@@ -241,8 +241,8 @@ elif [ "${MODE}" == "up-org2" ]; then
     echo "Starting main org"
     generateDockerComposeOrg2
     startOrg2
-    fetchAndJoinChannel ${ORG1} "peer0"
-    fetchAndJoinChannel ${ORG1} "peer1"
+    fetchAndJoinChannel ${ORG2} "peer0"
+    fetchAndJoinChannel ${ORG2} "peer1"
     echo "Pending"
 elif [ "${MODE}" == "down-main" ]; then
     echo "Pending"
