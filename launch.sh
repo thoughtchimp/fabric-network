@@ -6,9 +6,11 @@ set -e
 # Including common functions
 source ./common.sh
 
-composeTemplatesFolder="templates/docker-compose"
-artifactsTemplatesFolder="templates/crypto"
-scriptsTemplateFolder="templates/scripts"
+templatesFolder="templates"
+
+composeTemplatesFolder="${templatesFolder}/docker-compose"
+artifactsTemplatesFolder="${templatesFolder}/crypto"
+scriptsTemplateFolder="${templatesFolder}/scripts"
 
 ARCH=`uname -m`
 
@@ -42,12 +44,7 @@ else
     fi
 fi
 
-function removeArtifacts() {
-    rm -rf ${1}
-    [[ -d ${1} ]] || mkdir ${1}
-    [[ -d ${1}/artifacts ]] || mkdir ${1}/artifacts
-}
-
+# Org1 functions
 function generateMainOrgArtifacts() {
     cryptogen generate --config=./${GENERATED_DOCKER_COMPOSE_FOLDER}/crypto-config.yaml --output=${GENERATED_CRYPTO_CONFIG_FOLDER}
 
@@ -105,6 +102,47 @@ function startMainOrg() {
     sleep ${FABRIC_START_TIMEOUT}
 }
 
+function createConnectionProfileMain() {
+    org=$ORG1
+
+    ORDERER_CA_CERT=$(certToString "${GENERATED_CRYPTO_CONFIG_FOLDER}/ordererOrganizations/${DOMAIN}/orderers/orderer.${DOMAIN}/tls/ca.crt")
+    PEER0_CA_CERT=$(certToString "${GENERATED_CRYPTO_CONFIG_FOLDER}/peerOrganizations/${org}.${DOMAIN}/peers/peer0.${org}.${DOMAIN}/tls/ca.crt")
+    PEER1_CA_CERT=$(certToString "${GENERATED_CRYPTO_CONFIG_FOLDER}/peerOrganizations/${org}.${DOMAIN}/peers/peer1.${org}.${DOMAIN}/tls/ca.crt")
+
+    f=${GENERATED_DOCKER_COMPOSE_FOLDER}/connection.json
+
+    sed -e "s/DOMAIN/${DOMAIN}/g" -e "s/ORG/${org}/g" -e "s/CHANNEL_NAME/${CHANNEL_NAME}/g" -e "s~\"ORDERER_CA_CERT\"~\"${ORDERER_CA_CERT}\"~" -e "s~\"PEER0_CA_CERT\"~\"${PEER0_CA_CERT}\"~" -e "s~\"PEER1_CA_CERT\"~\"${PEER1_CA_CERT}\"~" ${templatesFolder}/connection-template.json > ${f}
+}
+
+function createPeerAdminCardMain() {
+    org=$ORG1
+
+    MSP_PATH=${GENERATED_CRYPTO_CONFIG_FOLDER}/peerOrganizations/${org}.${DOMAIN}/users/Admin@${org}.${DOMAIN}/msp
+
+    CERT=${MSP_PATH}/signcerts/Admin@${org}.${DOMAIN}-cert.pem
+    PRIVATE_KEY=${MSP_PATH}/keystore/*_sk
+    PEER_ADMIN_CARD=PeerAdmin@${org}
+
+    if composer card list --card ${PEER_ADMIN_CARD} > /dev/null; then
+        composer card delete --card ${PEER_ADMIN_CARD}
+    fi
+
+    rm -rf ${GENERATED_DOCKER_COMPOSE_FOLDER}/${PEER_ADMIN_CARD}.card
+    rm -rf ~/.composer/cards/${PEER_ADMIN_CARD}
+    rm -rf ~/.composer/client-data/${PEER_ADMIN_CARD}
+
+    echo "Creating connection profile for PeerAdmin card"
+    createConnectionProfileMain
+
+    echo "Creating PeerAdmin Card"
+    composer card create -p ${GENERATED_DOCKER_COMPOSE_FOLDER}/connection.json -u PeerAdmin -c ${CERT} -k ${PRIVATE_KEY} -r PeerAdmin -r ChannelAdmin -f ${GENERATED_DOCKER_COMPOSE_FOLDER}/${PEER_ADMIN_CARD}.card
+
+    echo "Importing PeerAdmin Card"
+    composer card import --file ${GENERATED_DOCKER_COMPOSE_FOLDER}/${PEER_ADMIN_CARD}.card
+}
+
+
+# Org2 functions
 function generateOrg2Artifacts() {
     cryptogen generate --config=./${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER}/crypto-config.yaml --output=${GENERATED_ORG2_CRYPTO_CONFIG_FOLDER}
 
@@ -177,6 +215,48 @@ function startOrg2() {
     sleep ${FABRIC_START_TIMEOUT}
 }
 
+function createConnectionProfileOrg2() {
+    org=$ORG2
+
+    ORDERER_CA_CERT=$(certToString "${GENERATED_ORG2_CRYPTO_CONFIG_FOLDER}/ordererOrganizations/${DOMAIN}/orderers/orderer.${DOMAIN}/tls/ca.crt")
+    PEER0_CA_CERT=$(certToString "${GENERATED_ORG2_CRYPTO_CONFIG_FOLDER}/peerOrganizations/${org}.${DOMAIN}/peers/peer0.${org}.${DOMAIN}/tls/ca.crt")
+    PEER1_CA_CERT=$(certToString "${GENERATED_ORG2_CRYPTO_CONFIG_FOLDER}/peerOrganizations/${org}.${DOMAIN}/peers/peer1.${org}.${DOMAIN}/tls/ca.crt")
+
+    f=${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER}/connection.json
+
+    sed -e "s/DOMAIN/${DOMAIN}/g" -e "s/ORG/${org}/g" -e "s/CHANNEL_NAME/${CHANNEL_NAME}/g" -e "s~\"ORDERER_CA_CERT\"~\"${ORDERER_CA_CERT}\"~" -e "s~\"PEER0_CA_CERT\"~\"${PEER0_CA_CERT}\"~" -e "s~\"PEER1_CA_CERT\"~\"${PEER1_CA_CERT}\"~" ${templatesFolder}/connection-template.json > ${f}
+}
+
+function createPeerAdminCardOrg2() {
+    org=$ORG2
+
+    MSP_PATH=${GENERATED_ORG2_CRYPTO_CONFIG_FOLDER}/peerOrganizations/${org}.${DOMAIN}/users/Admin@${org}.${DOMAIN}/msp
+
+    CERT=${MSP_PATH}/signcerts/Admin@${org}.${DOMAIN}-cert.pem
+    PRIVATE_KEY=${MSP_PATH}/keystore/*_sk
+    PEER_ADMIN_CARD=PeerAdmin@${org}
+
+    echo "Deleting ${PEER_ADMIN_CARD} card if already exist"
+    removeCard ${PEER_ADMIN_CARD}
+
+    echo "Creating connection profile for PeerAdmin card"
+    createConnectionProfileOrg2
+
+    echo "Creating PeerAdmin Card"
+    composer card create -p ${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER}/connection.json -u PeerAdmin -c ${CERT} -k ${PRIVATE_KEY} -r PeerAdmin -r ChannelAdmin -f ${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER}/${PEER_ADMIN_CARD}.card
+
+    echo "Importing PeerAdmin Card"
+    composer card import --file ${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER}/${PEER_ADMIN_CARD}.card
+}
+
+
+# Common functions
+function removeArtifacts() {
+    rm -rf ${1}
+    [[ -d ${1} ]] || mkdir ${1}
+    [[ -d ${1}/artifacts ]] || mkdir ${1}/artifacts
+}
+
 function findCASecretKey() {
     echo `find ${1}/peerOrganizations/${2}.${DOMAIN}/ca -type f -name "*_sk" 2>/dev/null | sed "s/.*\///"`
 }
@@ -217,6 +297,47 @@ function downloadArtifacts() {
         cp -r ${GENERATED_CRYPTO_CONFIG_FOLDER}/peerOrganizations/${ORG1}.${DOMAIN} ${GENERATED_ORG2_CRYPTO_CONFIG_FOLDER}/peerOrganizations
         cp -r ${GENERATED_CRYPTO_CONFIG_FOLDER}/ordererOrganizations ${GENERATED_ORG2_CRYPTO_CONFIG_FOLDER}
     fi
+}
+
+function certToString() {
+    _temp=$(<$1)
+    echo "${_temp//$'\n'/\\\\n}"
+}
+
+function installNetwork() {
+    org=${1}
+    compose_folder=${2}
+    bna=${3}
+    network=${4}
+
+    PEER_ADMIN_CARD=PeerAdmin@${org}
+    NETOWRK_ADMIN_CARD=admin@${network}
+
+    echo "Installing Business Network"
+    composer network install --card ${PEER_ADMIN_CARD} --archiveFile ${bna}
+
+    echo "Starting Business Network"
+    composer network start --card ${PEER_ADMIN_CARD} --networkName ${network} --networkVersion 0.0.1 --networkAdmin admin --networkAdminEnrollSecret adminpw --file ${compose_folder}/${NETOWRK_ADMIN_CARD}.card
+
+    echo "Deleting ${NETOWRK_ADMIN_CARD} card if already exist"
+    removeCard ${NETOWRK_ADMIN_CARD}
+
+    echo "Import Business Network Admin Card"
+    composer card import --file ${compose_folder}/${NETOWRK_ADMIN_CARD}.card
+
+    echo "Ping Business Network to check status"
+    composer network ping --card ${NETOWRK_ADMIN_CARD}
+}
+
+function removeCard() {
+    card=${1}
+
+    if composer card list --card ${card} > /dev/null; then
+        composer card delete --card ${card}
+    fi
+
+    rm -rf ~/.composer/cards/${card}
+    rm -rf ~/.composer/client-data/${card}
 }
 
 # Parsing commandline args
@@ -269,6 +390,12 @@ elif [ "${MODE}" == "down-main" ]; then
     echo "Pending"
 elif [ "${MODE}" == "down-org2" ]; then
     echo "Pending"
+elif [ "${MODE}" == "peeradmin-main" ]; then
+    createPeerAdminCardMain
+    installNetwork ${ORG1} ${GENERATED_DOCKER_COMPOSE_FOLDER} export_import@0.0.1.bna export_import
+elif [ "${MODE}" == "peeradmin-org2" ]; then
+    createPeerAdminCardOrg2
+    installNetwork ${ORG2} ${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER} export_import@0.0.1.bna export_import
 else
   echo "Please provide a valid argument!"
   exit 1

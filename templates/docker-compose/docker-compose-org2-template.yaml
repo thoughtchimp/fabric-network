@@ -34,7 +34,7 @@ services:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - CORE_PEER_ID=peer0.ORG.DOMAIN
       - CORE_PEER_ADDRESS=peer0.ORG.DOMAIN:7051
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=composer_default
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=composer_defaultnetwork
       - CORE_PEER_LOCALMSPID=ORGMSP
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/msp
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
@@ -83,7 +83,7 @@ services:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - CORE_PEER_ID=peer1.ORG.DOMAIN
       - CORE_PEER_ADDRESS=peer1.ORG.DOMAIN:7051
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=composer_default
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=composer_defaultnetwork
       - CORE_PEER_LOCALMSPID=ORGMSP
       - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/crypto/msp
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB

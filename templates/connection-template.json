@@ -1,0 +1,92 @@
+{
+    "name": "ORG",
+    "x-type": "hlfv1",
+    "x-commitTimeout": 300,
+    "version": "1.0.0",
+    "client": {
+        "organization": "ORG",
+        "connection": {
+            "timeout": {
+                "peer": {
+                    "endorser": "300",
+                    "eventHub": "300",
+                    "eventReg": "300"
+                },
+                "orderer": "300"
+            }
+        }
+    },
+    "channels": {
+        "CHANNEL_NAME": {
+            "orderers": [
+                "orderer.DOMAIN"
+            ],
+            "peers": {
+                "peer0.ORG.DOMAIN": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "eventSource": true
+                },
+                "peer1.ORG.DOMAIN": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "eventSource": true
+                }
+            }
+        }
+    },
+    "organizations": {
+        "ORG": {
+            "mspid": "ORGMSP",
+            "peers": [
+                "peer0.ORG.DOMAIN",
+                "peer1.ORG.DOMAIN"
+            ],
+            "certificateAuthorities": [
+                "ca.ORG.DOMAIN"
+            ]
+        }
+    },
+    "orderers": {
+        "orderer.DOMAIN": {
+            "url": "grpcs://localhost:7050",
+            "grpcOptions": {
+                "ssl-target-name-override": "orderer.DOMAIN"
+            },
+            "tlsCACerts": {
+                "pem": "ORDERER_CA_CERT"
+            }
+        }
+    },
+    "peers": {
+        "peer0.ORG.DOMAIN": {
+            "url": "grpcs://localhost:7051",
+            "eventUrl": "grpcs://localhost:7053",
+            "grpcOptions": {
+                "ssl-target-name-override": "peer0.ORG.DOMAIN"
+            },
+            "tlsCACerts": {
+                "pem": "PEER0_CA_CERT"
+            }
+        },
+        "peer1.ORG.DOMAIN": {
+            "url": "grpcs://localhost:8051",
+            "eventUrl": "grpcs://localhost:8053",
+            "grpcOptions": {
+                "ssl-target-name-override": "peer1.ORG.DOMAIN"
+            },
+            "tlsCACerts": {
+                "pem": "PEER1_CA_CERT"
+            }
+        }
+    },
+    "certificateAuthorities": {
+        "ca.ORG.DOMAIN": {
+            "url": "https://localhost:7054",
+            "caName": "ca.ORG.DOMAIN",
+            "httpOptions": {
+                "verify": false
+            }
+        }
+    }
+}
