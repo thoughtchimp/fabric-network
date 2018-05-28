@@ -29,7 +29,7 @@ Building the network is divided into three parts, it is recommended that you fol
 
 ### 3. Installing the Network with sample .bna
 * Main Org `./launch.sh -m installnetwork-main`
-* For Org2 `./launch.sh -m installnetwork-org1`
+* For Org2 `./launch.sh -m installnetwork-org2`
 
 ## Bringing the Network Down
 * Main Org `./launch.sh -m down-main`

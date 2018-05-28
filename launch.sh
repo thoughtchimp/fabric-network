@@ -111,7 +111,7 @@ function createConnectionProfileMain() {
 
     f=${GENERATED_DOCKER_COMPOSE_FOLDER}/connection.json
 
-    sed -e "s/DOMAIN/${DOMAIN}/g" -e "s/ORG/${org}/g" -e "s/CHANNEL_NAME/${CHANNEL_NAME}/g" -e "s~\"ORDERER_CA_CERT\"~\"${ORDERER_CA_CERT}\"~" -e "s~\"PEER0_CA_CERT\"~\"${PEER0_CA_CERT}\"~" -e "s~\"PEER1_CA_CERT\"~\"${PEER1_CA_CERT}\"~" ${templatesFolder}/connection-template.json > ${f}
+    sed -e "s/DOMAIN/${DOMAIN}/g" -e "s/ORG/${org}/g" -e "s/CHANNEL_NAME/${CHANNEL_NAME}/g" -e "s~\"ORDERER_CA_CERT\"~\"${ORDERER_CA_CERT}\"~" -e "s~\"PEER0_CA_CERT\"~\"${PEER0_CA_CERT}\"~" -e "s~\"PEER1_CA_CERT\"~\"${PEER1_CA_CERT}\"~" ${templatesFolder}/connection-main.json > ${f}
 }
 
 function createPeerAdminCardMain() {
@@ -224,7 +224,7 @@ function createConnectionProfileOrg2() {
 
     f=${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER}/connection.json
 
-    sed -e "s/DOMAIN/${DOMAIN}/g" -e "s/ORG/${org}/g" -e "s/CHANNEL_NAME/${CHANNEL_NAME}/g" -e "s~\"ORDERER_CA_CERT\"~\"${ORDERER_CA_CERT}\"~" -e "s~\"PEER0_CA_CERT\"~\"${PEER0_CA_CERT}\"~" -e "s~\"PEER1_CA_CERT\"~\"${PEER1_CA_CERT}\"~" ${templatesFolder}/connection-template.json > ${f}
+    sed -e "s/DOMAIN/${DOMAIN}/g" -e "s/ORG/${org}/g" -e "s/CHANNEL_NAME/${CHANNEL_NAME}/g" -e "s~\"ORDERER_CA_CERT\"~\"${ORDERER_CA_CERT}\"~" -e "s~\"PEER0_CA_CERT\"~\"${PEER0_CA_CERT}\"~" -e "s~\"PEER1_CA_CERT\"~\"${PEER1_CA_CERT}\"~" ${templatesFolder}/connection-org2.json > ${f}
 }
 
 function createPeerAdminCardOrg2() {
