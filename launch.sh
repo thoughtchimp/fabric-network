@@ -392,9 +392,11 @@ elif [ "${MODE}" == "down-org2" ]; then
     echo "Pending"
 elif [ "${MODE}" == "peeradmin-main" ]; then
     createPeerAdminCardMain
-    installNetwork ${ORG1} ${GENERATED_DOCKER_COMPOSE_FOLDER} export_import@0.0.1.bna export_import
 elif [ "${MODE}" == "peeradmin-org2" ]; then
     createPeerAdminCardOrg2
+elif [ "${MODE}" == "installnetwork-main" ]; then
+    installNetwork ${ORG1} ${GENERATED_DOCKER_COMPOSE_FOLDER} export_import@0.0.1.bna export_import
+elif [ "${MODE}" == "installnetwork-org2" ]; then
     installNetwork ${ORG2} ${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER} export_import@0.0.1.bna export_import
 else
   echo "Please provide a valid argument!"
