@@ -100,6 +100,7 @@ function startMainOrg() {
 
     echo "sleeping for ${FABRIC_START_TIMEOUT} seconds to wait for fabric to complete start up"
     sleep ${FABRIC_START_TIMEOUT}
+    registerHosts ${ORG1}
 }
 
 function createConnectionProfileMain() {
@@ -213,6 +214,7 @@ function startOrg2() {
 
     echo "sleeping for ${FABRIC_START_TIMEOUT} seconds to wait for fabric to complete start up"
     sleep ${FABRIC_START_TIMEOUT}
+    registerHosts ${ORG2}
 }
 
 function createConnectionProfileOrg2() {
@@ -340,6 +342,29 @@ function removeCard() {
     rm -rf ~/.composer/client-data/${card}
 }
 
+function registerHosts() {
+    org=${1}
+
+    HOSTS="127.0.0.1 orderer.${DOMAIN} peer0.${org}.${DOMAIN} peer1.${org}.${DOMAIN} ca.${org}.${DOMAIN}"
+    add_or_update ${HOSTS} "/etc/hosts"
+}
+
+function generateComposerTemplate() {
+    template=${TEMPLATES_DOCKER_COMPOSE_FOLDER}/docker-composer-template.yaml
+    f="${GENERATED_DOCKER_COMPOSE_FOLDER}/docker-composer.yaml"
+    sed -e "s/NETWORK_ADMIN_CARD/admin@export_import/g" ${template} > ${f}
+}
+
+function startComposerPlayground() {
+    generateComposerTemplate
+    docker-compose -f "${GENERATED_DOCKER_COMPOSE_FOLDER}/docker-composer.yaml" up -d composer-playground
+}
+
+function startComposerRestServer() {
+    generateComposerTemplate
+    docker-compose -f "${GENERATED_DOCKER_COMPOSE_FOLDER}/docker-composer.yaml" up -d composer-rest-server
+}
+
 # Parsing commandline args
 while getopts "h?m:r" opt; do
     case "${opt}" in
@@ -398,6 +423,10 @@ elif [ "${MODE}" == "installnetwork-main" ]; then
     installNetwork ${ORG1} ${GENERATED_DOCKER_COMPOSE_FOLDER} export_import@0.0.1.bna export_import
 elif [ "${MODE}" == "installnetwork-org2" ]; then
     installNetwork ${ORG2} ${GENERATED_DOCKER_COMPOSE_ORG2_FOLDER} export_import@0.0.1.bna export_import
+elif [ "${MODE}" == "composer-playground" ]; then
+    startComposerPlayground
+elif [ "${MODE}" == "composer-rest-server" ]; then
+    startComposerRestServer
 else
   echo "Please provide a valid argument!"
   exit 1

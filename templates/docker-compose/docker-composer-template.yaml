@@ -1,0 +1,33 @@
+version: '2'
+
+networks:
+  composer_defaultnetwork:
+     external: true
+
+services:
+  composer-playground:
+    container_name: composer-playground
+    image: hyperledger/composer-playground:latest
+    ports:
+      - 8080:8080
+    command: pm2-docker composer-playground
+    volumes:
+      - ~/.composer:/home/composer/.composer
+    networks:
+      - composer_defaultnetwork
+  
+  composer-rest-server:
+    container_name: composer-rest-server
+    image: hyperledger/composer-rest-server:latest
+    environment:
+      - COMPOSER_CARD=NETWORK_ADMIN_CARD
+      - COMPOSER_NAMESPACES=always
+      - COMPOSER_AUTHENTICATION=false
+      - COMPOSER_MULTIUSER=false
+    ports:
+      - 3000:3000
+    command: pm2-docker composer-rest-server
+    volumes:
+      - ~/.composer:/home/composer/.composer
+    networks:
+      - composer_defaultnetwork

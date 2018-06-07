@@ -38,6 +38,15 @@ function get_input() {
     fi
 }
 
+function add_or_update() {
+    updating_string=$1
+    file_to_update=$2
+    
+    if ! grep -q "$updating_string" "$file_to_update"; then
+        echo -e $updating_string | sudo bash -c 'tee >> '$file_to_update
+    fi
+}
+
 function downloadBinaries() {
     #Download Binaries
     sudo mkdir -p ~/fabric-ca
